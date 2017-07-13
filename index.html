@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>图片预加载-无序加载</title>
+  <style>
+    html, body {
+      height: 100%;
+    }
+    a {
+      text-decoration: none;
+    }
+    .box {
+      text-align: center;
+    }
+    .btn {
+      display: inline-block;
+      height: 30px;
+      line-height: 30px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      padding: 0 10px;
+      margin-right: 50px;
+      color: #333;
+    }
+    .btn:hover {
+      background-color: #eee;
+    }
+    .loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #eee;
+      text-align: center;
+      font-size: 30px;
+    }
+    .progress {
+      margin-top: 300px;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <img src="http://i2.hoopchina.com.cn/user/308/15960308/13383588090.jpg" id="img" width="1200" />
+    <p>
+      <a href="javascript:;" class="btn" data-control="prev">上一页</a>
+      <a href="javascript:;" class="btn" data-control="next">下一页</a>
+    </p>
+  </div>
+  <div class="loading">
+    <p class="progress">
+      0%
+    </p>
+  </div>
+  <script src="./js/jquery.min.js"></script>
+  <script src="./js/preload.js"></script>
+  <script>
+    var imgs = [
+      'http://i2.hoopchina.com.cn/user/308/15960308/13383588090.jpg',
+      'http://img.article.pchome.net/00/44/23/20/pic_lib/wm/2.jpg',
+      'http://lcd.yesky.com/imagelist/2009/044/404q4y8g4m0p.jpg',
+      'http://lcd.yesky.com/imagelist/2009/044/cgro54wt2t2x.jpg'
+    ];
+    var index = 0, // 当前是第几张图片
+        len = imgs.length, // 图片的总长度
+        $progress = $('.progress'),
+        var count = 0  // 当前加载的数量
+    
+    // 原生的预加载方法
+    // 遍历所有图片的src
+    // $.each(imgs, function (i, src) {
+    //   // 创建图片
+    //   var imgObj = new Image();
+    //   // 当前图片加载完毕的时候
+    //   $(imgObj).on('load error', function () {
+    //     // 每加载一次,显示加载
+    //     $progress.html(Math.round((count + 1) / len) + '%');
+    //     // 如果所有的都加载完毕，就将loading页面隐藏起来
+    //     if (count >= len - 1) {
+    //       $('loading').hide();
+    //       // 当前页是第一张
+    //       document.title = '1/';
+    //     }
+    //     count++;
+    //   });
+    //   imgObj.src = src
+    // })
+    
+    // 1.0 不使用预加载技术的时候
+    $('.btn').on('click', function() {
+      // 判断当前点击的是上一张还是下一张
+      if ($(this).data('control') === 'prev') {
+        // 上一张index --，但是不能小于0
+        index = Math.max(0, --index);
+      } else {
+        // 下一张不能超过最后一张
+        index = Math.min(len - 1, ++index);
+      }
+      // 显示当前是第几页
+      document.title = (index + 1) + '/' + len;
+      // 把数组里面的地址给img
+      $('#img').attr('src', imgs[index]);
+    });
+
+    // 2.0 使用预加载技术
+    $.preload(imgs,{
+      // 每一次加载完毕执行的方法
+      each: function(count) {
+        $progress.html(Math.round((count + 1) / len * 100) + '%');
+      },
+      // 所有的图片加载完毕执行的方法
+      all: function() {
+        $('.loading').hide();
+        document.title = '1/' + len;
+      }
+    })
+  </script>
+</body>
+</html>
